@@ -1,0 +1,34 @@
+{
+    "manifest_version": 3,
+    "name": "Hello Extensions of the world!",
+    "description": "Base Level Extension",
+    "version": "1.0",
+    "permissions": [
+        "contextMenus",
+        "tabs",
+        "activeTab"
+    ],
+    "background": {
+        "service_worker": "service_worker.js"
+    },
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "all_frames": false,
+            "run_at": "document_start"
+        }
+    ],
+    "action": {
+        "default_popup": "images/hello.html",
+        "default_icon": "images/hello_extensions.png"
+    }
+}
