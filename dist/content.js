@@ -14,13 +14,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 function findElement(url) {
-    let lastIndex = url.lastIndexOf("/");
-    console.log(lastIndex);
-    let tempUrl = url.slice(lastIndex);
-    console.log(tempUrl);
-    const wantedAnchors = document.querySelectorAll("a[href*='" + tempUrl + "']");
-    const imgAnchor = wantedAnchors[0];
-    const titleAnchor = wantedAnchors[1];
-    console.log(imgAnchor.getElementsByTagName("yt-image")[0].getElementsByTagName("img")[0].getAttribute("src"));
-    console.log(titleAnchor.getAttribute("title"));
+    const lastIndex = url.lastIndexOf("/");
+    const watchURL = url.slice(lastIndex);
+    const wantedAnchors = document.querySelectorAll("a[href*='" + watchURL + "']");
+    let titleAnchor = wantedAnchors[1];
+    if(titleAnchor.id == "thumbnail")
+    {  
+        titleAnchor = wantedAnchors[2];
+    }
+    const thumbnailURL = constructThumbnailURL(watchURL);
+    const title = titleAnchor.getAttribute("title");
+    console.log(thumbnailURL);
+    console.log(title);
+    
+}
+
+function constructThumbnailURL(url)
+{
+    const firstSliceIndex = url.lastIndexOf("v=");
+    const tempURL = url.slice(firstSliceIndex + 2);
+    const annoyingPP = tempURL.lastIndexOf("&pp");
+    let videoID;
+    if(annoyingPP == -1)
+    {
+        videoID = tempURL;
+    }
+    else
+    {
+        videoID = tempURL.slice(0, annoyingPP);
+    }
+    return "https://img.youtube.com/vi/" + videoID +"/mqdefault.jpg";
 }
