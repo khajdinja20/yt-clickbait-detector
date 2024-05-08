@@ -18,11 +18,6 @@ function clickMenuCallBack(info, tab) {
 
 }
 
-// find a way to get the image url or image itself from the link context or just restrict it to the image context lmao
-// or somehow get the DOM element that was clicked on which would probably be the easiest even though service workers dont have access to the DOM
-// you could use the offscreen document API to use the DOM 
-
-
 chrome.runtime.onInstalled.addListener(function () {
     let contexts = [
         'link'
