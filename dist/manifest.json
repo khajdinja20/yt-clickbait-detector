@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
-    "name": "Hello Extensions of the world!",
-    "description": "Base Level Extension",
+    "name": "YT Clickbait Detector",
+    "description": "Extension to detect clickbait on YouTube",
     "version": "1.0",
     "permissions": [
         "contextMenus",
@@ -12,13 +12,14 @@
         "service_worker": "service_worker.js"
     },
     "host_permissions": [
-        "<all_urls>"
+        "https://youtube.com/*",
+        "https://youtu.be/*"
     ],
     "content_scripts": [
         {
             "matches": [
-                "http://*/*",
-                "https://*/*"
+                "https://youtube.com/*",
+                "https://youtu.be/*"
             ],
             "js": [
                 "content.js"

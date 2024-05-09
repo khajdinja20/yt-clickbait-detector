@@ -32,6 +32,7 @@ chrome.runtime.onInstalled.addListener(function()
         let context = contexts[ i ];
         let title = "Classify Video";
         chrome.contextMenus.create({
+            targetUrlPatterns: [ "https://www.youtube.com/watch?v=*", "https://www.youtu.be/watch?v=" ],
             title: title,
             contexts: [ context ],
             id: context
