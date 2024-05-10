@@ -1,0 +1,20 @@
+{
+  "name": "yt-clickbait-detector",
+  "version": "1.0.0",
+  "description": "Extension to detect clickbait on YouTube",
+  "scripts": {
+    "copy-linux": "mkdir -p dist/src && cp src/content.js dist/src/",
+    "copy-windows": "copy src\\content.js dist\\src\\",
+    "build-linux": "parcel build src/service_worker.js --dist-dir dist/src/ && npm run copy-linux",
+    "build-windows": "parcel build src\\service_worker.js --dist-dir dist\\src\\ && npm run copy-windows",
+    "watch": "npm run copy && parcel watch src/service_worker.js --dist-dir dist/src/"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs": "^4.19.0"
+  },
+  "devDependencies": {
+    "buffer": "^6.0.3",
+    "parcel": "^2.12.0",
+    "process": "^0.11.10"
+  }
+}
