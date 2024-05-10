@@ -9,7 +9,7 @@
         "activeTab"
     ],
     "background": {
-        "service_worker": "service_worker.js"
+        "service_worker": "src/service_worker.js"
     },
     "host_permissions": [
         "https://youtube.com/*",
@@ -22,7 +22,7 @@
                 "https://youtu.be/*"
             ],
             "js": [
-                "content.js"
+                "src/content.js"
             ],
             "all_frames": false,
             "run_at": "document_start"
