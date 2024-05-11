@@ -16,9 +16,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
             {
                 loadImageAndSendDataBack(findElement(message.url), sendResponse);
                 return true;
+            }
+        case "IMAGE_CLICK_PROCESSED":
+            {
+                addPredictionText(message.predictedValue, message.url);
+                break;
+            }
+        default:
+            break;
     }
     return true;
 });
+
+function addPredictionText(predictions, videoURL)
+{
+    console.log(predictions);
+    const targetElement = getTitleAnchor(getWatchURL(videoURL)).parentNode.parentNode.parentNode;
+    console.log(targetElement);
+    const container = document.createElement("div");
+    const predictionContent = Math.round(predictions * 100);
+    console.log(predictionContent);
+    container.className = TEXT_DIV_CLASSNAME;
+    container.textContent = predictionContent;
+    targetElement.appendChild(container);
+}
 
 function getWatchURL(url)
 {
