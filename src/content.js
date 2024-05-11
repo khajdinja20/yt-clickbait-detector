@@ -1,3 +1,9 @@
+const TEXT_DIV_CLASSNAME = 'extension_text';
+const HIGH_CONFIDENCE_THRESHOLD = 0.6;
+const LOW_CONFIDENCE_THRESHOLD = 0.1;
+const IMG_SIZE = 224;
+const MIN_IMG_SIZE = 120;
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
 {
     if(!message)
