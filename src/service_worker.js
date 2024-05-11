@@ -64,10 +64,15 @@ class Classifier
         console.log("Loading model...");
         try
         {
-            //this.model = await tf.loadLayersModel("https://raw.githubusercontent.com/tkolar20/tkolar20.github.io/main/model/model.json");
-            //this.model = await tf.loadGraphModel("https://tkolar20.github.io/model_graph/model.json");
-            //this.model = await tf.loadGraphModel("https://tkolar20.github.io/model_graph_h5/model.json");
-            this.model = await tf.loadLayersModel("https://tkolar20.github.io/model_layers_h5/model.json");
+            if(this.checkModelExists())
+            {
+                this.model = await tf.loadLayersModel("indexeddb://image-model");
+            }
+            else
+            {
+                this.model = await tf.loadLayersModel("https://tkolar20.github.io/model_layers_h5/model.json");
+                await this.model.save("indexeddb://image-model");
+            }
             tf.tidy(() => 
             {
                 this.model.predict(tf.zeros([1, 224, 224, 3]));
@@ -94,6 +99,30 @@ class Classifier
         const predictedValue = predictions.arraySync()[0][0];
         const message = {action: 'IMAGE_CLICK_PROCESSED', title, url, predictedValue};
         chrome.tabs.sendMessage(tabId, message);
+    }
+
+    async checkModelExists()
+    {
+        let request = indexedDB.open("tensorflowjs", 1);
+        request.onsuccess = (event) =>
+        {
+            let db = event.target.result;
+            let store = db.transaction(["model_info_store"], "readonly").objectStore("model_info_store");
+            let getRequest = store.get("image-model");
+            getRequest.onsuccess = (event) =>
+            {
+                if(event.target.result !== undefined)
+                {
+                    console.log("Key exists");
+                    return true;
+                }
+                else
+                {
+                    console.log("Key doesnt exist");
+                }
+            }
+        }
+        return false;
     }
 }
 
