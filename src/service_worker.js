@@ -24,10 +24,10 @@ function clickMenuCallBack(info, tab)
                 'See console logs for errors.');
             return;
         }
+        console.log(resp);
         const imageData = new ImageData(Uint8ClampedArray.from(resp.rawImageData), resp.width, resp.height);
-        const classifierData = preprocessImage(imageData)
-        console.log(classifierData)
-        classifier.analyzeImage(classifierData, info.srcUrl, tab.id);
+        const classifierData = preprocessImage(imageData);
+        classifier.analyzeImage(classifierData, resp.title, info.linkUrl, tab.id);
     });
 
 }
@@ -80,22 +80,20 @@ class Classifier
         }
     }
 
-    async analyzeImage(imageData, url, tabId)
+    async analyzeImage(imageData, title, url, tabId)
     {
         if(!tabId)
         {
             console.error('No tab.  No prediction.');
             return;
         }
-        console.log("Making prediction...");
         const startTime = performance.now();
         const predictions = await this.model.predict(imageData);
         const totalTime = performance.now() - startTime;
         console.log(`Done in ${totalTime.toFixed(1)} ms `);
-        const message = {action: 'IMAGE_CLICK_PROCESSED', url, predictions};
         const predictedValue = predictions.arraySync()[0][0];
-        console.log(predictedValue);
-        //console.log(JSON.stringify(predictions));
+        const message = {action: 'IMAGE_CLICK_PROCESSED', title, url, predictedValue};
+        chrome.tabs.sendMessage(tabId, message);
     }
 }
 
