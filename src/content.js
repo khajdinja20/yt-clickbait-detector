@@ -14,9 +14,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
     {
         case "IMAGE_CLICKED":
             {
-                //findElement(message.url);
-                loadImageAndSendDataBack(findElement(message.url)[0], sendResponse);
-            }
+                loadImageAndSendDataBack(findElement(message.url), sendResponse);
+                return true;
     }
     return true;
 });
@@ -56,9 +55,10 @@ function constructThumbnailURL(url)
     return "https://img.youtube.com/vi/" + videoID + "/mqdefault.jpg";
 }
 
-function loadImageAndSendDataBack(src, sendResponse)
+function loadImageAndSendDataBack(elements, sendResponse)
 {
     const img = new Image();
+    const src = elements[0];
     img.crossOrigin = "anonymous";
     img.onerror = function(e)
     {
@@ -68,11 +68,11 @@ function loadImageAndSendDataBack(src, sendResponse)
     };
     img.onload = function(e)
     {
-        if((img.height && img.height > 120) ||
-            (img.width && img.width > 120))
+        if((img.height && img.height > MIN_IMG_SIZE) ||
+            (img.width && img.width > MIN_IMG_SIZE))
         {
-            img.width = 224;
-            img.height = 224;
+            img.width = IMG_SIZE;
+            img.height = IMG_SIZE;
             const canvas = new OffscreenCanvas(img.width, img.height);
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0);
@@ -81,6 +81,7 @@ function loadImageAndSendDataBack(src, sendResponse)
                 rawImageData: Array.from(imageData.data),
                 width: img.width,
                 height: img.height,
+                title: elements[1]
             });
             return;
         }
