@@ -20,19 +20,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
     return true;
 });
 
-
-function findElement(url)
+function getWatchURL(url)
 {
-    const lastIndex = url.lastIndexOf("/");
-    const watchURL = url.slice(lastIndex);
+    return url.slice(url.lastIndexOf("/"));
+}
+
+function getTitleAnchor(watchURL)
+{
     const wantedAnchors = document.querySelectorAll("a[href*='" + watchURL + "']");
     let titleAnchor = wantedAnchors[1];
     if(titleAnchor.id == "thumbnail")
     {
         titleAnchor = wantedAnchors[2];
     }
+    return titleAnchor;
+}
+
+function findElement(url)
+{
+    const watchURL = getWatchURL(url);
     const thumbnailURL = constructThumbnailURL(watchURL);
-    const title = titleAnchor.getAttribute("title");
+    const title = getTitleAnchor(watchURL).getAttribute("title");
     console.log(thumbnailURL);
     console.log(title);
     return new Array(thumbnailURL, title);
