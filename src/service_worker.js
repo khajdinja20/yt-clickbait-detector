@@ -107,18 +107,25 @@ class Classifier
         request.onsuccess = (event) =>
         {
             let db = event.target.result;
-            let store = db.transaction(["model_info_store"], "readonly").objectStore("model_info_store");
-            let getRequest = store.get("image-model");
-            getRequest.onsuccess = (event) =>
+            if(db.objectStoreNames.contains("model_info_store"))
             {
-                if(event.target.result !== undefined)
+                let store = db.transaction(["model_info_store"], "readonly").objectStore("model_info_store");
+                let getRequest = store.get("image-model");
+                getRequest.onsuccess = (event) =>
                 {
-                    console.log("Key exists");
-                    return true;
+                    if(event.target.result !== undefined)
+                    {
+                        console.log("Key exists");
+                        return true;
+                    }
+                    else
+                    {
+                        console.log("Key doesnt exist");
+                    }
                 }
-                else
+                getRequest.onerror = (event) =>
                 {
-                    console.log("Key doesnt exist");
+                    return false;
                 }
             }
         }
