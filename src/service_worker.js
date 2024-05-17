@@ -64,7 +64,7 @@ class Classifier
         console.log("Loading model...");
         try
         {
-            if(this.checkModelExists())
+            if(await this.checkModelExists())
             {
                 this.model = await tf.loadLayersModel("indexeddb://image-model");
             }
