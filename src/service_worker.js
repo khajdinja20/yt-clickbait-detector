@@ -101,35 +101,43 @@ class Classifier
         chrome.tabs.sendMessage(tabId, message);
     }
 
-    async checkModelExists()
+    checkModelExists()
     {
-        let request = indexedDB.open("tensorflowjs", 1);
-        request.onsuccess = (event) =>
+        return new Promise((resolve) =>
         {
-            let db = event.target.result;
-            if(db.objectStoreNames.contains("model_info_store"))
+            let request = indexedDB.open("tensorflowjs", 1);
+            request.onsuccess = (event) =>
             {
-                let store = db.transaction(["model_info_store"], "readonly").objectStore("model_info_store");
-                let getRequest = store.get("image-model");
-                getRequest.onsuccess = (event) =>
+                let db = event.target.result;
+                if(db.objectStoreNames.contains("model_info_store"))
                 {
-                    if(event.target.result !== undefined)
+                    let store = db.transaction(["model_info_store"], "readonly").objectStore("model_info_store");
+                    let getRequest = store.get("image-model");
+                    getRequest.onsuccess = (event) =>
                     {
-                        console.log("Key exists");
-                        return true;
+                        if(event.target.result !== undefined)
+                        {
+                            console.log("Key exists");
+                            return resolve(true);
+                        }
+                        else
+                        {
+                            console.log("Key doesnt exist");
+                            return resolve(false);
+                        }
                     }
-                    else
+                    getRequest.onerror = (event) =>
                     {
-                        console.log("Key doesnt exist");
+                        return resolve(false);
                     }
-                }
-                getRequest.onerror = (event) =>
-                {
-                    return false;
                 }
             }
-        }
-        return false;
+            request.onupgradeneeded = (event) =>
+            {
+                event.target.transaction.abort();
+                return resolve(false);
+            };
+        });
     }
 }
 
