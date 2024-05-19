@@ -4,14 +4,11 @@ const LOW_CONFIDENCE_THRESHOLD = 0.1;
 const IMG_SIZE = 224;
 const MIN_IMG_SIZE = 120;
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
-{
-    if(!message)
-    {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (!message) {
         return;
     }
-    switch(message.action)
-    {
+    switch (message.action) {
         case "IMAGE_CLICKED":
             {
                 loadImageAndSendDataBack(findElement(message.url), sendResponse);
@@ -28,37 +25,57 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
     return true;
 });
 
-function addPredictionText(predictions, videoURL)
-{
+function addPredictionText(predictions, videoURL) {
     console.log(predictions);
-    const targetElement = getTitleAnchor(getWatchURL(videoURL)).parentNode.parentNode.parentNode;
-    console.log(targetElement);
+    const titleAnchor = getTitleAnchor(getWatchURL(videoURL));
+    const videoRenderer = titleAnchor.closest('ytd-video-renderer');
+    if (!videoRenderer) {
+        console.error('Video renderer not found');
+        return;
+    }
+    const thumbnailContainer = videoRenderer.querySelector('ytd-thumbnail');
+    if (!thumbnailContainer) {
+        console.error('Thumbnail container not found');
+        return;
+    }
+
     const container = document.createElement("div");
     const predictionContent = Math.round(predictions * 100);
     console.log(predictionContent);
-    container.className = TEXT_DIV_CLASSNAME;
-    container.textContent = predictionContent;
-    targetElement.appendChild(container);
+
+    container.style.position = 'absolute';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.width = '100%';
+    container.style.height = '100%';
+    container.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    container.style.color = 'white';
+    container.style.display = 'flex';
+    container.style.alignItems = 'center';
+    container.style.justifyContent = 'center';
+    container.style.fontSize = '20px';
+    container.style.fontWeight = 'bold';
+    container.style.zIndex = '10';
+    container.textContent = `${predictionContent}% Clickbait`;
+
+    thumbnailContainer.style.position = 'relative';
+    thumbnailContainer.appendChild(container);
 }
 
-function getWatchURL(url)
-{
+function getWatchURL(url) {
     return url.slice(url.lastIndexOf("/"));
 }
 
-function getTitleAnchor(watchURL)
-{
+function getTitleAnchor(watchURL) {
     const wantedAnchors = document.querySelectorAll("a[href*='" + watchURL + "']");
     let titleAnchor = wantedAnchors[1];
-    if(titleAnchor.id == "thumbnail")
-    {
+    if (titleAnchor.id == "thumbnail") {
         titleAnchor = wantedAnchors[2];
     }
     return titleAnchor;
 }
 
-function findElement(url)
-{
+function findElement(url) {
     const watchURL = getWatchURL(url);
     const thumbnailURL = constructThumbnailURL(watchURL);
     const title = getTitleAnchor(watchURL).getAttribute("title");
@@ -67,39 +84,32 @@ function findElement(url)
     return new Array(thumbnailURL, title);
 }
 
-function constructThumbnailURL(url)
-{
+function constructThumbnailURL(url) {
     const firstSliceIndex = url.lastIndexOf("v=");
     const tempURL = url.slice(firstSliceIndex + 2);
     const annoyingPP = tempURL.lastIndexOf("&pp");
     let videoID;
-    if(annoyingPP == -1)
-    {
+    if (annoyingPP == -1) {
         videoID = tempURL;
     }
-    else
-    {
+    else {
         videoID = tempURL.slice(0, annoyingPP);
     }
     return "https://img.youtube.com/vi/" + videoID + "/mqdefault.jpg";
 }
 
-function loadImageAndSendDataBack(elements, sendResponse)
-{
+function loadImageAndSendDataBack(elements, sendResponse) {
     const img = new Image();
     const src = elements[0];
     img.crossOrigin = "anonymous";
-    img.onerror = function(e)
-    {
+    img.onerror = function (e) {
         console.warn(`Could not load image from external source ${src}.`);
-        sendResponse({rawImageData: undefined});
+        sendResponse({ rawImageData: undefined });
         return;
     };
-    img.onload = function(e)
-    {
-        if((img.height && img.height > MIN_IMG_SIZE) ||
-            (img.width && img.width > MIN_IMG_SIZE))
-        {
+    img.onload = function (e) {
+        if ((img.height && img.height > MIN_IMG_SIZE) ||
+            (img.width && img.width > MIN_IMG_SIZE)) {
             img.width = IMG_SIZE;
             img.height = IMG_SIZE;
             const canvas = new OffscreenCanvas(img.width, img.height);
@@ -115,7 +125,7 @@ function loadImageAndSendDataBack(elements, sendResponse)
             return;
         }
         console.warn(`Image size too small. [${img.height} x ${img.width}] vs. minimum [${MIN_IMG_SIZE} x ${MIN_IMG_SIZE}]`);
-        sendResponse({rawImageData: undefined});
+        sendResponse({ rawImageData: undefined });
     };
     img.src = src;
 }
