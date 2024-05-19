@@ -27,6 +27,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 function addPredictionText(predictions, videoURL) {
     console.log(predictions);
+    var threshold = 80; // migrate to slider in context menu later, % value
     const titleAnchor = getTitleAnchor(getWatchURL(videoURL));
     const videoRenderer = titleAnchor.closest('ytd-video-renderer');
     if (!videoRenderer) {
@@ -42,15 +43,14 @@ function addPredictionText(predictions, videoURL) {
     const container = document.createElement("div");
     const predictionContent = Math.round(predictions * 100);
     console.log(predictionContent);
-
+    console.log(threshold);
     container.style.position = 'absolute';
     container.style.top = '0';
     container.style.left = '0';
     container.style.width = '100%';
     container.style.height = '100%';
     container.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    container.style.color = 'white';
-    container.style.display = 'flex';
+    container.style.color = predictionContent < threshold ? 'green' : 'red'; container.style.display = 'flex';
     container.style.alignItems = 'center';
     container.style.justifyContent = 'center';
     container.style.fontSize = '20px';
