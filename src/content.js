@@ -27,39 +27,53 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 function addPredictionText(predictions, videoURL) {
     console.log(predictions);
-    var threshold = 80; // migrate to slider in context menu later, % value
-    const titleAnchor = getTitleAnchor(getWatchURL(videoURL));
-    const videoRenderer = titleAnchor.closest('ytd-video-renderer');
-    if (!videoRenderer) {
-        console.error('Video renderer not found');
-        return;
-    }
-    const thumbnailContainer = videoRenderer.querySelector('ytd-thumbnail');
-    if (!thumbnailContainer) {
-        console.error('Thumbnail container not found');
-        return;
-    }
+    console.log(predictions);
 
-    const container = document.createElement("div");
-    const predictionContent = Math.round(predictions * 100);
-    console.log(predictionContent);
-    console.log(threshold);
-    container.style.position = 'absolute';
-    container.style.top = '0';
-    container.style.left = '0';
-    container.style.width = '100%';
-    container.style.height = '100%';
-    container.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    container.style.color = predictionContent < threshold ? 'green' : 'red'; container.style.display = 'flex';
-    container.style.alignItems = 'center';
-    container.style.justifyContent = 'center';
-    container.style.fontSize = '20px';
-    container.style.fontWeight = 'bold';
-    container.style.zIndex = '10';
-    container.textContent = `${predictionContent}% Clickbait`;
+    // Retrieve the threshold value from storage
+    chrome.storage.sync.get(['clickbaitThreshold'], function (result) {
+        var threshold = result.clickbaitThreshold !== undefined ? result.clickbaitThreshold : 80; // Default to 80 if not set
 
-    thumbnailContainer.style.position = 'relative';
-    thumbnailContainer.appendChild(container);
+        console.log(threshold);
+
+        const titleAnchor = getTitleAnchor(getWatchURL(videoURL));
+        const videoRenderer = titleAnchor.closest('ytd-video-renderer');
+        if (!videoRenderer) {
+            console.error('Video renderer not found');
+            return;
+        }
+        const thumbnailContainer = videoRenderer.querySelector('ytd-thumbnail');
+        if (!thumbnailContainer) {
+            console.error('Thumbnail container not found');
+            return;
+        }
+
+        const container = document.createElement("div");
+        const predictionContent = Math.round(predictions * 100);
+        console.log(predictionContent);
+        console.log(threshold);
+
+        // Create the overlay
+        container.style.position = 'absolute';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = '100%';
+        container.style.height = '100%';
+        container.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        container.style.color = predictionContent < threshold ? 'green' : 'red';
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.style.justifyContent = 'center';
+        container.style.fontSize = '20px';
+        container.style.fontWeight = 'bold';
+        container.style.zIndex = '10';
+        container.textContent = `${predictionContent}% Clickbait`;
+
+        // Ensure the thumbnail container is relatively positioned
+        thumbnailContainer.style.position = 'relative';
+
+        // Append the overlay to the thumbnail container
+        thumbnailContainer.appendChild(container);
+    });
 }
 
 function getWatchURL(url) {
