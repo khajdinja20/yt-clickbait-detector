@@ -1,7 +1,8 @@
 //chrome.contextMenus.onClicked.addListener(genericOnClick);
 import * as tf from '@tensorflow/tfjs';
 
-function preprocessImage(imageData) {
+function preprocessImage(imageData)
+{
     const pixels = tf.browser.fromPixels(imageData);
     const img = tf.image.resizeBilinear(pixels, [224, 224]);
     const normalizedImg = img.div(255.0);
@@ -9,11 +10,14 @@ function preprocessImage(imageData) {
     return imgArray;
 }
 
-function clickMenuCallBack(info, tab) {
-    const message = { action: 'IMAGE_CLICKED', url: info.linkUrl };
+function clickMenuCallBack(info, tab)
+{
+    const message = {action: 'IMAGE_CLICKED', url: info.linkUrl};
     console.log(info.linkUrl);
-    chrome.tabs.sendMessage(tab.id, message, (resp) => {
-        if (!resp.rawImageData) {
+    chrome.tabs.sendMessage(tab.id, message, (resp) =>
+    {
+        if(!resp.rawImageData)
+        {
             console.error(
                 'Failed to get image data. ' +
                 'The image might be too small or failed to load. ' +
@@ -28,11 +32,13 @@ function clickMenuCallBack(info, tab) {
 
 }
 
-chrome.runtime.onInstalled.addListener(function () {
+chrome.runtime.onInstalled.addListener(function()
+{
     let contexts = [
         'link'
     ];
-    for (let i = 0; i < contexts.length; i++) {
+    for(let i = 0; i < contexts.length; i++)
+    {
         let context = contexts[i];
         let title = "Classify Video";
         chrome.contextMenus.create({
@@ -46,23 +52,30 @@ chrome.runtime.onInstalled.addListener(function () {
 
 chrome.contextMenus.onClicked.addListener(clickMenuCallBack);
 
-class Classifier {
-    constructor() {
+class Classifier
+{
+    constructor ()
+    {
         this.loadModel();
     }
 
-    async loadModel() {
+    async loadModel()
+    {
         console.log("Loading model...");
-        try {
-            if (false /*await this.checkModelExists() */) {
+        try
+        {
+            if(false /*await this.checkModelExists() */)
+            {
                 //this.model = await tf.loadLayersModel("indexeddb://image-model");
             }
-            else {
+            else
+            {
                 //this.model = await tf.loadLayersModel("https://tkolar20.github.io/model_layers_h5/model.json");
                 this.titleModel = await tf.loadGraphModel("https://raw.githubusercontent.com/tkolar20/tkolar20.github.io/main/title_model_saved_graph/model.json");
                 //await this.model.save("indexeddb://image-model");
             }
-            tf.tidy(() => {
+            tf.tidy(() =>
+            {
                 //this.model.predict(tf.zeros([1, 224, 224, 3]));
                 let input = "YOU WONT BELIEVE THIS!!!";
                 input = input.split(" ");
@@ -73,13 +86,16 @@ class Classifier {
             });
             console.log("Model loaded.");
         }
-        catch (e) {
-            console.log("Failed to load model", e);
+        catch(e)
+        {
+            console.log("Failed to image model", e);
         }
     }
 
-    async analyze(imageData, title, url, tabId) {
-        if (!tabId) {
+    async analyze(imageData, title, url, tabId)
+    {
+        if(!tabId)
+        {
             console.error('No tab.  No prediction.');
             return;
         }
@@ -91,34 +107,43 @@ class Classifier {
         const predictedValue = predictions.arraySync()[0][0];
         const titlePredictedValue = titlePredictions.arraySync()[0][0];
         console.log(titlePredictedValue);
-        const message = { action: 'IMAGE_CLICK_PROCESSED', title, url, predictedValue };
+        const message = {action: 'IMAGE_CLICK_PROCESSED', title, url, predictedValue};
         chrome.tabs.sendMessage(tabId, message);
     }
 
-    checkModelExists() {
-        return new Promise((resolve) => {
+    checkModelExists()
+    {
+        return new Promise((resolve) =>
+        {
             let request = indexedDB.open("tensorflowjs", 1);
-            request.onsuccess = (event) => {
+            request.onsuccess = (event) =>
+            {
                 let db = event.target.result;
-                if (db.objectStoreNames.contains("model_info_store")) {
+                if(db.objectStoreNames.contains("model_info_store"))
+                {
                     let store = db.transaction(["model_info_store"], "readonly").objectStore("model_info_store");
                     let getRequest = store.get("image-model");
-                    getRequest.onsuccess = (event) => {
-                        if (event.target.result !== undefined) {
+                    getRequest.onsuccess = (event) =>
+                    {
+                        if(event.target.result !== undefined)
+                        {
                             console.log("Key exists");
                             return resolve(true);
                         }
-                        else {
+                        else
+                        {
                             console.log("Key doesnt exist");
                             return resolve(false);
                         }
                     }
-                    getRequest.onerror = (event) => {
+                    getRequest.onerror = (event) =>
+                    {
                         return resolve(false);
                     }
                 }
             }
-            request.onupgradeneeded = (event) => {
+            request.onupgradeneeded = (event) =>
+            {
                 event.target.transaction.abort();
                 return resolve(false);
             };
@@ -126,17 +151,21 @@ class Classifier {
     }
 }
 
-class Tokenizer {
-    constructor() {
+class Tokenizer
+{
+    constructor ()
+    {
         this.loadTokenizer();
     }
 
-    async loadTokenizer() {
+    async loadTokenizer()
+    {
         // fetch vocab.txt and turn into array
         // maybe fetch special_tokens_map and tokenizer_config
     }
 
-    async tokenize() {
+    async tokenize()
+    {
         // turn title to array
         // map each word to appropriate value(index from vocab.txt)
         // on collab it sets first value to 101 and last to 102(dunno why)
