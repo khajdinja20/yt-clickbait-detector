@@ -110,17 +110,24 @@ class Classifier
 
     async analyze(imageData, title, url, tabId)
     {
+        console.time("analysis");
         if(!tabId)
         {
             console.error('No tab.  No prediction.');
             return;
         }
-        const startTime = performance.now();
-        const predictions = await this.model.predict(imageData);
-        const totalTime = performance.now() - startTime;
-        console.log(`Done in ${totalTime.toFixed(1)} ms `);
-        const predictedValue = predictions.arraySync()[0][0];
-        console.log(titlePredictedValue);
+        console.time("tokenize");
+        const tokenized = await tokenizer.tokenize(title);
+        console.log(tokenized);
+        console.timeEnd("tokenize");
+        const predictionsImage = await this.model.predict(imageData);
+
+        const predictionsTitle = await this.titleModel.predict({'input_ids': tf.tensor2d(tokenized, [1, tokenized.length], "int32"), 'attention_mask': tf.ones([1, tokenized.length], "int32")});
+        const predictedValuesTitle = predictionsTitle.arraySync();
+        const clickbaitValueTitle = tf.softmax(predictedValuesTitle).arraySync()[0][1];
+        const clickbaitValueImage = predictionsImage.arraySync()[0][0];
+        const predictedValue = (clickbaitValueTitle + clickbaitValueImage) / 2;
+        console.timeEnd("analysis");
         const message = {action: 'IMAGE_CLICK_PROCESSED', title, url, predictedValue};
         chrome.tabs.sendMessage(tabId, message);
     }
