@@ -61,34 +61,56 @@ class Classifier
 
     async loadModel()
     {
-        console.log("Loading model...");
+        console.log("Loading image model...");
         try
         {
-            if(false /*await this.checkModelExists() */)
+            if(await this.checkImageModelExists())
             {
-                //this.model = await tf.loadLayersModel("indexeddb://image-model");
+                this.model = await tf.loadLayersModel("indexeddb://image-model");
             }
             else
             {
-                //this.model = await tf.loadLayersModel("https://tkolar20.github.io/model_layers_h5/model.json");
-                this.titleModel = await tf.loadGraphModel("https://raw.githubusercontent.com/tkolar20/tkolar20.github.io/main/title_model_saved_graph/model.json");
-                //await this.model.save("indexeddb://image-model");
+                this.model = await tf.loadLayersModel("https://tkolar20.github.io/model_layers_h5/model.json");
+                await this.model.save("indexeddb://image-model");
             }
             tf.tidy(() =>
             {
-                //this.model.predict(tf.zeros([1, 224, 224, 3]));
-                let input = "YOU WONT BELIEVE THIS!!!";
-                input = input.split(" ");
-                console.log(input);
-                const prediction = this.titleModel.execute(input);
-
-                console.log(prediction);
+                this.model.predict(tf.zeros([1, 224, 224, 3]));
             });
-            console.log("Model loaded.");
+            console.log("Image model loaded.");
         }
         catch(e)
         {
-            console.log("Failed to image model", e);
+            console.log("Failed to load image model", e);
+        }
+
+        console.log("Loading title model...");
+        try
+        {
+            if(await this.checkTitleModelExists())
+            {
+                this.titleModel = await tf.loadGraphModel("indexeddb://title-model");
+            }
+            else
+            {
+                this.titleModel = await tf.loadGraphModel("https://raw.githubusercontent.com/tkolar20/tkolar20.github.io/main/title_model_saved_graph/model.json");
+                await this.titleModel.save("indexeddb://title-model");
+            }
+            tf.tidy(() =>
+            {
+                const predict = this.titleModel.predict({'input_ids': tf.tensor2d([101, 2017, 2180, 2102, 2903, 2023, 999, 999, 999, 102], [1, 10], 'int32'), "attention_mask": tf.tensor2d([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 10], 'int32')});
+                const soft = tf.softmax(predict);
+                console.log(soft);
+                /*const predictedValue = predict.arraySync()[0][0];
+                const soft = tf.softmax(predictedValue);
+                console.log(soft.arraySync()[0][0]);
+                const results = tf.argMax(soft).dataSync()[0];*/
+            });
+            console.log("Title model loaded.");
+        }
+        catch(e)
+        {
+            console.log("Failed to load title model", e);
         }
     }
 
@@ -101,17 +123,15 @@ class Classifier
         }
         const startTime = performance.now();
         const predictions = await this.model.predict(imageData);
-        const titlePredictions = await this.titleModel.predict(title);
         const totalTime = performance.now() - startTime;
         console.log(`Done in ${totalTime.toFixed(1)} ms `);
         const predictedValue = predictions.arraySync()[0][0];
-        const titlePredictedValue = titlePredictions.arraySync()[0][0];
         console.log(titlePredictedValue);
         const message = {action: 'IMAGE_CLICK_PROCESSED', title, url, predictedValue};
         chrome.tabs.sendMessage(tabId, message);
     }
 
-    checkModelExists()
+    checkImageModelExists()
     {
         return new Promise((resolve) =>
         {
@@ -123,6 +143,45 @@ class Classifier
                 {
                     let store = db.transaction(["model_info_store"], "readonly").objectStore("model_info_store");
                     let getRequest = store.get("image-model");
+                    getRequest.onsuccess = (event) =>
+                    {
+                        if(event.target.result !== undefined)
+                        {
+                            console.log("Key exists");
+                            return resolve(true);
+                        }
+                        else
+                        {
+                            console.log("Key doesnt exist");
+                            return resolve(false);
+                        }
+                    }
+                    getRequest.onerror = (event) =>
+                    {
+                        return resolve(false);
+                    }
+                }
+            }
+            request.onupgradeneeded = (event) =>
+            {
+                event.target.transaction.abort();
+                return resolve(false);
+            };
+        });
+    }
+
+    checkTitleModelExists()
+    {
+        return new Promise((resolve) =>
+        {
+            let request = indexedDB.open("tensorflowjs", 1);
+            request.onsuccess = (event) =>
+            {
+                let db = event.target.result;
+                if(db.objectStoreNames.contains("model_info_store"))
+                {
+                    let store = db.transaction(["model_info_store"], "readonly").objectStore("model_info_store");
+                    let getRequest = store.get("title-model");
                     getRequest.onsuccess = (event) =>
                     {
                         if(event.target.result !== undefined)
