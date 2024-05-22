@@ -235,12 +235,12 @@ class Tokenizer
             {
                 return index;
             }
-            return this.vocabArray.findIndex((el) => el == closest(x, this.vocabArray));
+            const closestWord = closest(x, this.vocabArray);
+            return this.vocabArray.findIndex((el) => el == closestWord);
         });
         tokens.unshift(101);
         tokens.push(102);
         return tokens;
-        // attention mask set all ones to word count + 2(i guess)
     }
 }
 
