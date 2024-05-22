@@ -98,13 +98,7 @@ class Classifier
             }
             tf.tidy(() =>
             {
-                const predict = this.titleModel.predict({'input_ids': tf.tensor2d([101, 2017, 2180, 2102, 2903, 2023, 999, 999, 999, 102], [1, 10], 'int32'), "attention_mask": tf.tensor2d([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 10], 'int32')});
-                const soft = tf.softmax(predict);
-                console.log(soft);
-                /*const predictedValue = predict.arraySync()[0][0];
-                const soft = tf.softmax(predictedValue);
-                console.log(soft.arraySync()[0][0]);
-                const results = tf.argMax(soft).dataSync()[0];*/
+                const prediction = this.titleModel.predict({'input_ids': tf.tensor2d([101, 2017, 2180, 2102, 2903, 2023, 999, 999, 999, 102], [1, 10], 'int32'), "attention_mask": tf.tensor2d([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 10], 'int32')});
             });
             console.log("Title model loaded.");
         }
