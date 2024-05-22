@@ -1,6 +1,6 @@
 //chrome.contextMenus.onClicked.addListener(genericOnClick);
 import * as tf from '@tensorflow/tfjs';
-
+import {closest} from 'fastest-levenshtein';
 function preprocessImage(imageData)
 {
     const pixels = tf.browser.fromPixels(imageData);
@@ -160,17 +160,30 @@ class Tokenizer
 
     async loadTokenizer()
     {
-        // fetch vocab.txt and turn into array
+        const vocab = await (await fetch("https://tkolar20.github.io/title_model_saved_graph/vocab.txt")).text();
+        this.vocabArray = vocab.split("\n");
         // maybe fetch special_tokens_map and tokenizer_config
     }
 
-    async tokenize()
+    async tokenize(title)
     {
-        // turn title to array
-        // map each word to appropriate value(index from vocab.txt)
-        // on collab it sets first value to 101 and last to 102(dunno why)
+        const input = title.toLowerCase();
+        const titleArray = input.split(/(?=[!"#$%&'()*+,-./:;<=>?@[\]\\^_`{|}~¡¢£¤¥¦§¨©ª«¬®°±÷¿ʻʼʾʿˈː])|(?<=[!"#$%&'()*+,-./:;<=>?@[\]\\^_`{|}~¡¢£¤¥¦§¨©ª«¬®°±÷¿ʻʼʾʿˈː])|\s+/);
+        const tokens = titleArray.map((x) =>
+        {
+            const index = this.vocabArray.findIndex((el) => el == x);
+            if(index != -1)
+            {
+                return index;
+            }
+            return this.vocabArray.findIndex((el) => el == closest(x, this.vocabArray));
+        });
+        tokens.unshift(101);
+        tokens.push(102);
+        return tokens;
         // attention mask set all ones to word count + 2(i guess)
     }
 }
 
+const tokenizer = new Tokenizer();
 const classifier = new Classifier();
