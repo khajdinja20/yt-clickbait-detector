@@ -20,7 +20,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
         case "IMAGE_CLICK_PROCESSED":
             {
                 addPredictionText(message.predictedValue, message.url);
-                break;
+                return true;
             }
         default:
             break;
@@ -30,9 +30,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
 
 function addPredictionText(predictions, videoURL)
 {
-    console.log(predictions);
-    console.log(predictions);
-
     // Retrieve the threshold value from storage
     chrome.storage.sync.get(['clickbaitThreshold'], function(result)
     {
@@ -104,8 +101,6 @@ function findElement(url)
     const watchURL = getWatchURL(url);
     const thumbnailURL = constructThumbnailURL(watchURL);
     const title = getTitleAnchor(watchURL).getAttribute("title");
-    console.log(thumbnailURL);
-    console.log(title);
     return new Array(thumbnailURL, title);
 }
 
