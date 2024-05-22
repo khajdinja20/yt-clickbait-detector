@@ -93,12 +93,17 @@ class Classifier
             }
             else
             {
-                this.titleModel = await tf.loadGraphModel("https://raw.githubusercontent.com/tkolar20/tkolar20.github.io/main/title_model_saved_graph/model.json");
+                //this.titleModel = await tf.loadGraphModel("https://raw.githubusercontent.com/tkolar20/tkolar20.github.io/main/title_model_saved_graph/model.json");
+                this.titleModel = await tf.loadGraphModel("https://raw.githubusercontent.com/tkolar20/tkolar20.github.io/main/tiny_title_model_saved_graph/model.json");
                 await this.titleModel.save("indexeddb://title-model");
             }
             tf.tidy(() =>
             {
-                const prediction = this.titleModel.predict({'input_ids': tf.tensor2d([101, 2017, 2180, 2102, 2903, 2023, 999, 999, 999, 102], [1, 10], 'int32'), "attention_mask": tf.tensor2d([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 10], 'int32')});
+                const prediction = this.titleModel.execute({
+                    'input_ids': tf.tensor2d([101, 2017, 2180, 2102, 2903, 2023, 999, 999, 999, 102], [1, 10], 'int32'),
+                    "token_type_ids": tf.zeros([1, 10], "int32"), //needed for tinybert
+                    "attention_mask": tf.tensor2d([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 10], 'int32')
+                });
             });
             console.log("Title model loaded.");
         }
@@ -122,7 +127,11 @@ class Classifier
         console.timeEnd("tokenize");
         const predictionsImage = await this.model.predict(imageData);
 
-        const predictionsTitle = await this.titleModel.predict({'input_ids': tf.tensor2d(tokenized, [1, tokenized.length], "int32"), 'attention_mask': tf.ones([1, tokenized.length], "int32")});
+        const predictionsTitle = await this.titleModel.predict({
+            'input_ids': tf.tensor2d(tokenized, [1, tokenized.length], "int32"),
+            'token_type_ids': tf.zeros([1, tokenized.length], "int32"), //needed for tinybert
+            'attention_mask': tf.ones([1, tokenized.length], "int32")
+        });
         const predictedValuesTitle = predictionsTitle.arraySync();
         const clickbaitValueTitle = tf.softmax(predictedValuesTitle).arraySync()[0][1];
         const clickbaitValueImage = predictionsImage.arraySync()[0][0];
