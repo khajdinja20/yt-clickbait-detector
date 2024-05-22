@@ -20,12 +20,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) =>
         case "IMAGE_CLICK_PROCESSED":
             {
                 addPredictionText(message.predictedValue, message.url);
-                return true;
+                break;
             }
         default:
             break;
     }
-    return true;
 });
 
 function addPredictionText(predictions, videoURL)
