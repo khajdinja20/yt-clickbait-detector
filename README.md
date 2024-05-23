@@ -7,6 +7,8 @@
 Welcome to **YouTube Clickbait Detector**, the essential browser extension designed to empower you with the ability to identify and debunk clickbait videos effortlessly.
 If you're tired of falling for sensationalized content and want to ensure your online experience is authentic and informative, you're in the right place!
 
+This project has been developed by students for the purposes of Internet Security course at the Faculty of Organisation and Informatics in Varaždin
+
 ## Technologies
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
 ![IndexedDB](https://img.shields.io/badge/IndexedDB-0033cc?style=for-the-badge&logo=indexeddb&logoColor=white)
