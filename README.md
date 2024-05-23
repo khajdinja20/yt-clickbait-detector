@@ -32,7 +32,7 @@ Now, run the following command:
 
 to install needed npm packages.
 
-4. Finally, run `build` commands depending on your OS.
+Finally, run `build` commands depending on your OS.
 
 ### Windows
 Run the following command:
