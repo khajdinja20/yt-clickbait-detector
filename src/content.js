@@ -32,7 +32,7 @@ function addPredictionText(predictions, videoURL)
     // Retrieve the threshold value from storage
     chrome.storage.sync.get(['clickbaitThreshold'], function(result)
     {
-        var threshold = result.clickbaitThreshold !== undefined ? result.clickbaitThreshold : 80; // Default to 80 if not set
+        var threshold = result.clickbaitThreshold !== undefined ? result.clickbaitThreshold : 50; // Default to 80 if not set
 
         console.log(threshold);
 
